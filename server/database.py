@@ -20,3 +20,16 @@ def create_connection():
     except Error as e:
         print(f"Ошибка подключения: {e}")
         return None
+
+# функция для получения новостей с пагинацией
+def get_news_with_pagination(connection, page, per_page):
+    try:
+        cursor = connection.cursor(dictionary=True)
+        offset = (page - 1) * per_page
+        query = "SELECT * FROM news LIMIT %s OFFSET %s"
+        cursor.execute(query, (per_page, offset))
+        news = cursor.fetchall()
+        return news
+    except mysql.connector.Error as e:
+        print(f"Ошибка при получении новостей: {e}")
+        return []

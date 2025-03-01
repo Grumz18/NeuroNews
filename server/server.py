@@ -1,5 +1,5 @@
 from flask import Flask
-from routes import register_route, login_route, protected_route, token_required
+from routes import register_route, login_route, protected_route, token_required, news_route
 
 app = Flask(__name__)
 
@@ -11,6 +11,10 @@ def register():
 @app.route('/login', methods=['POST'])
 def login():
     return login_route()
+
+@app.route('/news', methods=['GET'])
+def get_news():
+    return news_route()
 
 @app.route('/protected', methods=['GET'])
 @token_required

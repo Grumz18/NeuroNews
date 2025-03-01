@@ -1,6 +1,6 @@
 from flask import request, jsonify
 from functools import wraps
-from database import create_connection
+from database import create_connection, get_news_with_pagination
 from auth import generate_token, verify_token, hash_password, verify_password
 
 # Middleware для проверки токена
@@ -72,6 +72,22 @@ def login_route():
         except Exception as e:
             connection.close()
             return jsonify({"error": f"Ошибка при входе: {e}"}), 500
+    else:
+        return jsonify({"error": "Не удалось подключиться к базе данных"}), 500
+    
+def news_route():
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
+
+    connection = create_connection()
+    if connection:
+        try:
+            news = get_news_with_pagination(connection, page, per_page)
+            return jsonify(news), 200
+        except Exception as e:
+            return jsonify({"error": f"Ошибка: {e}"}), 500
+        finally:
+            connection.close()
     else:
         return jsonify({"error": "Не удалось подключиться к базе данных"}), 500
 
