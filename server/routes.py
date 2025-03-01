@@ -1,6 +1,6 @@
 from flask import request, jsonify
 from functools import wraps
-from database import create_connection, get_news_with_pagination
+from database import create_connection, get_news_with_pagination, search_news_by_keyword, get_news_by_category
 from auth import generate_token, verify_token, hash_password, verify_password
 
 # Middleware для проверки токена
@@ -83,6 +83,36 @@ def news_route():
     if connection:
         try:
             news = get_news_with_pagination(connection, page, per_page)
+            return jsonify(news), 200
+        except Exception as e:
+            return jsonify({"error": f"Ошибка: {e}"}), 500
+        finally:
+            connection.close()
+    else:
+        return jsonify({"error": "Не удалось подключиться к базе данных"}), 500
+    
+def search_news():
+    query = request.args.get('q', '')
+    if not query:
+        return jsonify({"error": "Параметр 'q' обязателен"}), 400
+
+    connection = create_connection()
+    if connection:
+        try:
+            results = search_news_by_keyword(connection, query)
+            return jsonify(results), 200
+        except Exception as e:
+            return jsonify({"error": f"Ошибка: {e}"}), 500
+        finally:
+            connection.close()
+    else:
+        return jsonify({"error": "Не удалось подключиться к базе данных"}), 500
+    
+def get_news_by_category_route(category):
+    connection = create_connection()
+    if connection:
+        try:
+            news = get_news_by_category(connection, category)
             return jsonify(news), 200
         except Exception as e:
             return jsonify({"error": f"Ошибка: {e}"}), 500

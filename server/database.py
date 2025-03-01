@@ -33,3 +33,31 @@ def get_news_with_pagination(connection, page, per_page):
     except mysql.connector.Error as e:
         print(f"Ошибка при получении новостей: {e}")
         return []
+    
+# Функция поиска новостей
+def search_news_by_keyword(connection, keyword):
+    try:
+        cursor = connection.cursor(dictionary=True)
+        query = "SELECT * FROM news WHERE title LIKE %s OR content LIKE %s"
+        cursor.execute(query, (f"%{keyword}%", f"%{keyword}%"))
+        results = cursor.fetchall()
+        return results
+    except mysql.connector.Error as e:
+        print(f"Ошибка при поиске новостей: {e}")
+        return []
+    
+# функция для получения новостей по категории
+def get_news_by_category(connection, category_name):
+    try:
+        cursor = connection.cursor(dictionary=True)
+        query = """
+            SELECT n.* FROM news n
+            JOIN categories c ON n.category_id = c.id
+            WHERE c.name = %s
+        """
+        cursor.execute(query, (category_name,))
+        news = cursor.fetchall()
+        return news
+    except mysql.connector.Error as e:
+        print(f"Ошибка при получении новостей по категории: {e}")
+        return []
