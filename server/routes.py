@@ -3,6 +3,7 @@ from functools import wraps
 from database import create_connection, get_news_with_pagination, search_news_by_keyword, get_news_by_category
 from auth import generate_token, verify_token, hash_password, verify_password
 from cache import Cache
+from validators import validate_email, validate_string, validate_id
 import json
 
 cache = Cache()
@@ -34,6 +35,9 @@ def register_route():
 
     if not email or not password:
         return jsonify({"error": "Email и пароль обязательны"}), 400
+    
+    validate_email(email)
+    validate_string(password, "Пароль", min_length=6, max_length=128)
 
     hashed_password = hash_password(password)
     connection = create_connection()
@@ -59,6 +63,9 @@ def login_route():
 
     if not email or not password:
         return jsonify({"error": "Email и пароль обязательны"}), 400
+    
+    validate_email(email)
+    validate_string(password, "Пароль", min_length=6, max_length=128)
 
     connection = create_connection()
     if connection:
@@ -164,12 +171,14 @@ def get_categories_routes():
     else:
         return jsonify({"error": "Не удалось подключиться к базе данных"}), 500
     
-def add_category_route():
+def add_category_route(user_id):
     data = request.json
     category_name = data.get('name')
 
     if not category_name:
         return jsonify({"error": "Имя категории обязательно"}), 400
+    
+    validate_string(category_name, "Имя категории", min_length=3, max_length=100)
 
     connection = create_connection()
     if connection:
@@ -199,6 +208,10 @@ def add_news_route():
 
     if not title or not content or not category_id:
         return jsonify({"error": "Все поля обязательны"}), 400
+    
+    validate_string(title, "Заголовок", min_length=3, max_length=255)
+    validate_string(content, "Контент", min_length=10, max_length=10000)
+    validate_id(category_id)
 
     connection = create_connection()
     if connection:

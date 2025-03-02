@@ -1,14 +1,25 @@
 from flask import Flask
 from routes import register_route, login_route, protected_route, token_required, news_route, search_news, get_news_by_category_route, get_categories_routes,add_category_route
 from routes import add_news_route
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
 app = Flask(__name__)
+
+limiter = Limiter(
+    app,
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"]
+)
 
 # Регистрация маршрутов
 @app.route('/register', methods=['POST'])
+@limiter.limit("10 per minute")
 def register():
     return register_route()
 
 @app.route('/login', methods=['POST'])
+@limiter.limit("10 per minute")
 def login():
     return login_route()
 
