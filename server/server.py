@@ -3,19 +3,24 @@ from routes import register_route, login_route, protected_route, token_required,
 from routes import add_news_route
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app, origins=["http://localhost:5173"])
 
 limiter = Limiter(
-    app,
-    key_func=get_remote_address,
-    default_limits=["200 per day", "50 per hour"]
+    key_func=get_remote_address,  # Функция для получения IP-адреса
+    default_limits=["200 per day", "50 per hour"]  # Лимиты по умолчанию
 )
+
+# Привязка Limiter к приложению
+limiter.init_app(app)
 
 # Регистрация маршрутов
 @app.route('/register', methods=['POST'])
 @limiter.limit("10 per minute")
 def register():
+    app.logger.info("Получен запрос на регистрацию")
     return register_route()
 
 @app.route('/login', methods=['POST'])

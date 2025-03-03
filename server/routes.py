@@ -29,31 +29,28 @@ def token_required(f):
 
 # Маршрут для регистрации
 def register_route():
-    data = request.json
-    email = data.get('email')
-    password = data.get('password')
+    try:
+        data = request.json
+        email = data.get('email')
+        password = data.get('password')
 
-    if not email or not password:
-        return jsonify({"error": "Email и пароль обязательны"}), 400
-    
-    validate_email(email)
-    validate_string(password, "Пароль", min_length=6, max_length=128)
+        if not email or not password:
+            return jsonify({"error": "Email и пароль обязательны"}), 400
 
-    hashed_password = hash_password(password)
-    connection = create_connection()
-    if connection:
-        try:
+        # Хэширование пароля
+        hashed_password = hash_password(password)
+
+        connection = create_connection()
+        if connection:
             cursor = connection.cursor()
             query = "INSERT INTO users (email, password_hash) VALUES (%s, %s)"
             cursor.execute(query, (email, hashed_password))
             connection.commit()
-            connection.close()
             return jsonify({"message": "Пользователь зарегистрирован!"}), 201
-        except Exception as e:
-            connection.close()
-            return jsonify({"error": f"Ошибка при регистрации: {e}"}), 500
-    else:
-        return jsonify({"error": "Не удалось подключиться к базе данных"}), 500
+        else:
+            return jsonify({"error": "Не удалось подключиться к базе данных"}), 500
+    except Exception as e:
+        return jsonify({"error": f"Ошибка: {e}"}), 500
 
 # Маршрут для входа
 def login_route():
