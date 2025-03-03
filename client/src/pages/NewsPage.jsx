@@ -30,16 +30,17 @@ function NewsPage() {
   }, []);
 
   return (
-    <div>
-      <h1>Новости</h1>
-      <ul>
-        {news.map((item) => (
-          <li key={item.id}>
-            <h2>{item.title}</h2>
-            <p>{item.content}</p>
-          </li>
-        ))}
-      </ul>
+    <div className="row">
+      {news.map((item) => (
+        <div key={item.id} className="col-md-6 col-lg-4 mb-4">
+          <div className="card h-100">
+            <div className="card-body">
+              <h5 className="card-title">{item.title}</h5>
+              <p className="card-text">{item.content}</p>
+            </div>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

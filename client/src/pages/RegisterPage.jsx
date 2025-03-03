@@ -47,33 +47,36 @@ function RegisterPage() {
   };
 
   return (
-    <div>
-      <h1>Регистрация</h1>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+    <div className="d-flex justify-content-center align-items-center vh-100">
+    <div className="card p-4" style={{ width: '100%', maxWidth: '400px' }}>
+      <h2 className="text-center mb-4">Регистрация</h2>
       <form onSubmit={handleSubmit}>
-        <div>
-          <label>Email:</label>
+        <div className="mb-3">
+          <label htmlFor="email" className="form-label">Email:</label>
           <input
             type="email"
+            className="form-control"
+            id="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
         </div>
-        <div>
-          <label>Пароль:</label>
+        <div className="mb-3">
+          <label htmlFor="password" className="form-label">Пароль:</label>
           <input
             type="password"
+            className="form-control"
+            id="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />
         </div>
-        <button type="submit" disabled={loading}>
-          {loading ? 'Загрузка...' : 'Зарегистрироваться'}
-        </button>
+        <button type="submit" className="btn btn-success w-100">Зарегистрироваться</button>
       </form>
     </div>
+  </div>
   );
 }
 
