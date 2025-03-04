@@ -1,14 +1,18 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 
 function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const { login } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      const response = await fetch('/api/login', {
+      const response = await fetch('http://localhost:5000/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -20,7 +24,10 @@ function LoginPage() {
 
       const data = await response.json();
       if (data.token) {
+        localStorage.setItem('token', data.token);
+        login();
         alert('Вход выполнен успешно!');
+        navigate('/admin');
       } else {
         alert('Неверный email или пароль');
       }

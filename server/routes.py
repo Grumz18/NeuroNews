@@ -1,7 +1,7 @@
 from flask import request, jsonify
 from functools import wraps
 from database import create_connection, get_news_with_pagination, search_news_by_keyword, get_news_by_category
-from auth import generate_token, verify_token, hash_password, verify_password
+from auth import generate_token, verify_token, hash_password, verify_password, verify_admin_token
 from cache import Cache
 from validators import validate_email, validate_string, validate_id
 import json
@@ -73,7 +73,7 @@ def login_route():
             user = cursor.fetchone()
 
             if user and verify_password(user['password_hash'], password):
-                token = generate_token(user['id'])
+                token = generate_token(user['id'], user['role'])
                 return jsonify({"message": "Вход выполнен успешно!", "token": token}), 200
             else:
                 return jsonify({"error": "Неверный email или пароль"}), 401
@@ -235,3 +235,36 @@ def add_news_route():
 # Защищенный маршрут
 def protected_route(user_id):
     return jsonify({"message": f"Доступ разрешен! Ваш ID: {user_id}"}), 200
+
+def admin_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.headers.get('Authorization')
+        if not token:
+            return jsonify({"error": "Токен отсутствует"}), 401
+
+        if token.startswith("Bearer "):
+            token = token.split(" ")[1]
+
+        user_id = verify_admin_token(token)
+        if not user_id:
+            return jsonify({"error": "Недостаточно прав"}), 403
+
+        kwargs['user_id'] = user_id
+        return f(*args, **kwargs)
+    return decorated
+
+def get_all_news_admin_route(user_id):
+    connection = create_connection()
+    if connection:
+        try:
+            cursor = connection.cursor(dictionary=True)
+            cursor.execute("SELECT * FROM news")
+            news = cursor.fetchall()
+            return jsonify(news), 200
+        except Exception as e:
+            return jsonify({"error": f"Ошибка: {e}"}), 500
+        finally:
+            connection.close()
+    else:
+        return jsonify({"error": "Не удалось подключиться к базе данных"}), 500

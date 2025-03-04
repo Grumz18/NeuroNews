@@ -22,9 +22,10 @@ def verify_password(stored_hash, provided_password):
     return bcrypt.checkpw(provided_password_bytes, stored_hash_bytes)
 
 # Генерация JWT
-def generate_token(user_id):
+def generate_token(user_id, role):
     payload = {
         "user_id": user_id,
+        "role": role,
         "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=24)
     }
     token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
@@ -35,6 +36,21 @@ def verify_token(token):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
         return payload.get("user_id")
+    except jwt.ExpiredSignatureError:
+        return None
+    except jwt.InvalidTokenError:
+        return None
+    
+# Авторизация админа
+def verify_admin_token(token):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        user_id = payload.get("user_id")
+        role = payload.get("role")
+
+        if role != "admin":
+            return None
+        return user_id
     except jwt.ExpiredSignatureError:
         return None
     except jwt.InvalidTokenError:

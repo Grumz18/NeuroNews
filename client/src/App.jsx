@@ -5,6 +5,7 @@ import NewsPage from './pages/NewsPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import Navbar from './components/Navbar';
+import AdminPage from './pages/AdminPage';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <Route path="/news" element={<NewsPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/admin" element={<AdminPage />} />
         </Routes>
       </div>
     </div>

@@ -1,6 +1,18 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { AuthContext } from '../context/AuthContext';
+import { useContext } from "react";
+
 
 const Navbar = () => {
+
+  const { isAuthenticated, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   return(
       <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
         <div className="container-fluid">
@@ -24,12 +36,16 @@ const Navbar = () => {
               <li className="nav-item">
                 <Link to="/news" className="nav-link">Новости</Link>
               </li>
-              <li className="nav-item">
-                <Link to="/login" className="nav-link">Вход</Link>
-              </li>
-              <li className="nav-item">
-                <Link to="/register" className="nav-link">Регистрация</Link>
-              </li>
+              {isAuthenticated ? (
+                <button className="btn btn-outline-danger" onClick={handleLogout}>
+                  Выйти
+                </button>
+                ) : (
+                  <>
+                    <Link to="/login" className="btn btn-outline-primary me-2"> Вход </Link>
+                    <Link to="/register" className="btn btn-outline-success"> Регистрация </Link>
+                  </>
+                )}
             </ul>
           </div>
         </div>

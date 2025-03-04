@@ -1,6 +1,6 @@
 from flask import Flask
 from routes import register_route, login_route, protected_route, token_required, news_route, search_news, get_news_by_category_route, get_categories_routes,add_category_route
-from routes import add_news_route
+from routes import add_news_route, admin_required, get_all_news_admin_route
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_cors import CORS
@@ -56,6 +56,11 @@ def add_category():
 @token_required
 def protected(user_id):
     return protected_route(user_id)
+
+@app.route('/admin/news', methods=['GET'])
+@admin_required
+def get_all_news_admin(user_id):
+    return get_all_news_admin_route(user_id)
 
 if __name__ == '__main__':
     app.run(debug=True)
