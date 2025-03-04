@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
 function LoginPage() {
@@ -27,7 +27,7 @@ function LoginPage() {
         const payload = JSON.parse(atob(data.token.split('.')[1])); // Декодируем токен
         localStorage.setItem('token', data.token);
         login(payload.role);
-        navigate('/admin');
+        payload.role == "admin" ? navigate('/admin') : navigate('/subscriptions')
       } else {
         alert('Неверный email или пароль');
       }
@@ -65,6 +65,12 @@ function LoginPage() {
           </div>
           <button type="submit" className="btn btn-primary w-100">Войти</button>
         </form>
+        <p className="mt-3 text-center">
+              Вы еще не зарегистрированы?{' '}
+              <Link to="/register" className="text-decoration-none">
+                Регистрация
+              </Link>
+            </p>
       </div>
     </div>
   );

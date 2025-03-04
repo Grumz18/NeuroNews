@@ -33,9 +33,18 @@ def register_route():
         data = request.json
         email = data.get('email')
         password = data.get('password')
+        confirm_password = data.get('confirm_password')
+        gender = data.get('gender', 'other')  # По умолчанию 'other'
+        date_of_birth = data.get('date_of_birth')
 
         if not email or not password:
             return jsonify({"error": "Email и пароль обязательны"}), 400
+        
+        validate_email(email)
+        validate_string(password, "Пароль", min_length=6, max_length=128)
+
+        if password != confirm_password:
+            return jsonify({"error": "Пароли не совпадают"}), 400
 
         # Хэширование пароля
         hashed_password = hash_password(password)
@@ -43,8 +52,8 @@ def register_route():
         connection = create_connection()
         if connection:
             cursor = connection.cursor()
-            query = "INSERT INTO users (email, password_hash) VALUES (%s, %s)"
-            cursor.execute(query, (email, hashed_password))
+            query = "INSERT INTO users (email, password_hash, gender, date_of_birth, role) VALUES (%s, %s, %s, %s, %s)"
+            cursor.execute(query, (email, hashed_password, gender, date_of_birth, 'user'))
             connection.commit()
             return jsonify({"message": "Пользователь зарегистрирован!"}), 201
         else:
