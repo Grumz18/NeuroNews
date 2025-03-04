@@ -7,13 +7,13 @@ function AdminPage() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [categoryId, setCategoryId] = useState('');
+  const [isLoading, setIsLoading] = useState(true); // Индикатор загрузки
   const navigate = useNavigate();
 
   // Проверка авторизации
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
-      alert('Вы должны войти как администратор');
       navigate('/login');
     }
   }, [navigate]);
@@ -27,7 +27,10 @@ function AdminPage() {
         if (response.ok) return response.json();
         throw new Error('Недостаточно прав');
       })
-      .then((data) => setNews(data))
+      .then((data) => {
+        setNews(data);
+        setIsLoading(false);
+      })
       .catch((error) => console.error('Ошибка загрузки новостей:', error));
   }, []);
 
@@ -55,6 +58,9 @@ function AdminPage() {
         if (data.message) {
           alert('Новость добавлена!');
           setNews([...news, data]);
+          setTitle('');
+          setContent('');
+          setCategoryId('');
         } else {
           alert('Ошибка при добавлении новости');
         }
@@ -63,55 +69,125 @@ function AdminPage() {
   };
 
   return (
-    <div>
-      <h1>Панель администратора</h1>
+    <div className="container mt-4">
+      {/* Шапка */}
+      <header className="mb-4">
+        <h1 className="text-center">Панель администратора</h1>
+      </header>
 
-      {/* Форма для добавления новостей */}
-      <form onSubmit={handleAddNews}>
-        <h2>Добавить новость</h2>
-        <div>
-          <label>Заголовок:</label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            required
-          />
+      {/* Форма добавления новостей */}
+      <section className="mb-4">
+        <div className="card">
+          <div className="card-header">
+            <h2 className="card-title">Добавить новость</h2>
+          </div>
+          <div className="card-body">
+            <form onSubmit={handleAddNews}>
+              <div className="mb-3">
+                <label htmlFor="title" className="form-label">
+                  Заголовок:
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  id="title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="mb-3">
+                <label htmlFor="content" className="form-label">
+                  Контент:
+                </label>
+                <textarea
+                  className="form-control"
+                  id="content"
+                  rows="4"
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  required
+                ></textarea>
+              </div>
+              <div className="mb-3">
+                <label htmlFor="category" className="form-label">
+                  Категория:
+                </label>
+                <select
+                  className="form-select"
+                  id="category"
+                  value={categoryId}
+                  onChange={(e) => setCategoryId(e.target.value)}
+                  required
+                >
+                  <option value="">Выберите категорию</option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <button type="submit" className="btn btn-primary">
+                Добавить новость
+              </button>
+            </form>
+          </div>
         </div>
-        <div>
-          <label>Контент:</label>
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label>Категория:</label>
-          <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} required>
-            <option value="">Выберите категорию</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <button type="submit">Добавить новость</button>
-      </form>
+      </section>
 
       {/* Список новостей */}
-      <h2>Список новостей</h2>
-      <ul>
-        {news.map((item) => (
-          <li key={item.id}>
-            <h3>{item.title}</h3>
-            <p>{item.content}</p>
-            <button onClick={() => alert('Редактирование в разработке')}>Редактировать</button>
-            <button onClick={() => alert('Удаление в разработке')}>Удалить</button>
-          </li>
-        ))}
-      </ul>
+      <section>
+        <div className="card">
+          <div className="card-header">
+            <h2 className="card-title">Список новостей</h2>
+          </div>
+          <div className="card-body">
+            {isLoading ? (
+              <div className="text-center">
+                <div className="spinner-border" role="status">
+                  <span className="visually-hidden">Загрузка...</span>
+                </div>
+              </div>
+            ) : (
+              <table className="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Заголовок</th>
+                    <th>Категория</th>
+                    <th>Действия</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {news.map((item) => {
+                    const category = categories.find((cat) => cat.id === item.category_id);
+                    return (
+                      <tr key={item.id}>
+                        <td>{item.title}</td>
+                        <td>{category ? category.name : 'Без категории'}</td>
+                        <td>
+                          <button
+                            className="btn btn-sm btn-warning me-2"
+                            onClick={() => alert('Редактирование в разработке')}
+                          >
+                            Редактировать
+                          </button>
+                          <button
+                            className="btn btn-sm btn-danger"
+                            onClick={() => alert('Удаление в разработке')}
+                          >
+                            Удалить
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

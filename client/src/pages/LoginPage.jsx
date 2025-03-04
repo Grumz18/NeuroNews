@@ -24,9 +24,9 @@ function LoginPage() {
 
       const data = await response.json();
       if (data.token) {
+        const payload = JSON.parse(atob(data.token.split('.')[1])); // Декодируем токен
         localStorage.setItem('token', data.token);
-        login();
-        alert('Вход выполнен успешно!');
+        login(payload.role);
         navigate('/admin');
       } else {
         alert('Неверный email или пароль');
